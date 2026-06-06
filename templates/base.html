@@ -18,26 +18,65 @@
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navMenu">
+    {% if current_user.is_authenticated %}
     <ul class="navbar-nav me-auto">
       <li class="nav-item">
         <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}"
            href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link {% if 'lead' in request.endpoint %}active{% endif %}"
+        <a class="nav-link {% if 'lead' in (request.endpoint or '') %}active{% endif %}"
            href="{{ url_for('leads') }}"><i class="bi bi-people me-1"></i>Leads</a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'pricing' %}active{% endif %}"
+           href="{{ url_for('pricing') }}"><i class="bi bi-lightning-charge me-1"></i>Pricing</a>
+      </li>
     </ul>
-    <a href="{{ url_for('lead_new') }}" class="btn btn-light btn-sm fw-semibold">
-      <i class="bi bi-plus-lg me-1"></i>New Lead
-    </a>
+    <div class="d-flex align-items-center gap-2">
+      {% if not current_user.is_pro %}
+      <a href="{{ url_for('pricing') }}" class="btn btn-warning btn-sm fw-semibold">
+        <i class="bi bi-lightning-charge me-1"></i>Upgrade
+      </a>
+      {% endif %}
+      <a href="{{ url_for('lead_new') }}" class="btn btn-light btn-sm fw-semibold">
+        <i class="bi bi-plus-lg me-1"></i>New Lead
+      </a>
+      <div class="dropdown">
+        <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+          <i class="bi bi-person-circle me-1"></i>{{ current_user.name.split()[0] }}
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><span class="dropdown-item-text text-muted small">{{ current_user.email }}</span></li>
+          <li><span class="dropdown-item-text text-muted small">
+            Plan: <strong class="{% if current_user.is_pro %}text-primary{% endif %}">
+              {{ 'Pro' if current_user.is_pro else 'Free' }}
+            </strong>
+          </span></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="{{ url_for('account') }}"><i class="bi bi-gear me-1"></i>Account</a></li>
+          <li>
+            <form method="post" action="{{ url_for('logout') }}" class="d-inline">
+              <button class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-1"></i>Sign Out</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+    {% else %}
+    <ul class="navbar-nav me-auto"></ul>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-sm">Sign In</a>
+      <a href="{{ url_for('signup') }}" class="btn btn-light btn-sm fw-semibold">Sign Up Free</a>
+    </div>
+    {% endif %}
   </div>
 </nav>
 
 <div class="container-fluid px-4 py-3">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% for cat, msg in messages %}
-      <div class="alert alert-{{ 'success' if cat == 'success' else 'info' if cat == 'info' else 'warning' }} alert-dismissible fade show mt-2" role="alert">
+      <div class="alert alert-{{ 'success' if cat == 'success' else 'info' if cat == 'info' else 'warning' if cat == 'warning' else 'danger' }} alert-dismissible fade show mt-2" role="alert">
         {{ msg }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>

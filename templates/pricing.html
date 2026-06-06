@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Pricing · SoloCRM{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5 mt-3">
+  <h2 class="fw-bold">Simple, honest pricing</h2>
+  <p class="text-muted">Start free. Upgrade when you're ready to grow.</p>
+</div>
+
+<div class="row justify-content-center g-4 mb-5">
+  <!-- Free -->
+  <div class="col-md-5">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body p-4">
+        <div class="fw-bold fs-5 mb-1">Free</div>
+        <div class="display-5 fw-bold mb-1">$0</div>
+        <div class="text-muted small mb-4">Forever free, no credit card</div>
+        <ul class="list-unstyled mb-4">
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Up to <strong>10 leads</strong></li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Follow-up scheduling</li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Pipeline dashboard</li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Notes & activity log</li>
+          <li class="mb-2 text-muted"><i class="bi bi-x-circle me-2"></i>Unlimited leads</li>
+          <li class="mb-2 text-muted"><i class="bi bi-x-circle me-2"></i>Priority support</li>
+        </ul>
+        {% if current_user.is_authenticated %}
+          {% if not current_user.is_pro %}
+            <button class="btn btn-outline-secondary w-100" disabled>Current Plan</button>
+          {% else %}
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100">Go to Dashboard</a>
+          {% endif %}
+        {% else %}
+          <a href="{{ url_for('signup') }}" class="btn btn-outline-primary w-100">Get Started Free</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Pro -->
+  <div class="col-md-5">
+    <div class="card border-0 shadow h-100 border-primary" style="border-width:2px!important">
+      <div class="card-body p-4 position-relative">
+        <span class="badge bg-primary position-absolute top-0 end-0 m-3">Most Popular</span>
+        <div class="fw-bold fs-5 mb-1">Pro</div>
+        <div class="display-5 fw-bold mb-1">$9<span class="fs-5 fw-normal text-muted">/mo</span></div>
+        <div class="text-muted small mb-4">Cancel anytime</div>
+        <ul class="list-unstyled mb-4">
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Unlimited leads</strong></li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Follow-up scheduling</li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Pipeline dashboard</li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Notes & activity log</li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority support</li>
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Export to CSV (coming soon)</li>
+        </ul>
+        {% if current_user.is_authenticated %}
+          {% if current_user.is_pro %}
+            <button class="btn btn-success w-100" disabled><i class="bi bi-check-lg me-1"></i>You're on Pro</button>
+          {% elif stripe_price_id %}
+            <form method="post" action="{{ url_for('subscribe_checkout') }}">
+              <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                <i class="bi bi-lightning-charge me-1"></i>Upgrade to Pro
+              </button>
+            </form>
+          {% else %}
+            <button class="btn btn-primary w-100" disabled>Coming Soon</button>
+          {% endif %}
+        {% else %}
+          <a href="{{ url_for('signup') }}" class="btn btn-primary w-100 fw-semibold">
+            <i class="bi bi-lightning-charge me-1"></i>Start with Pro
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="text-center text-muted small">
+  Payments are processed securely by Stripe. You can cancel at any time from your account settings.
+</div>
+{% endblock %}
