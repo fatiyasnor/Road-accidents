@@ -6,7 +6,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date, timedelta
 from dateutil import parser as dateparser
 import os
-import stripe
+
+try:
+    import stripe
+    STRIPE_ENABLED = True
+except ImportError:
+    stripe = None
+    STRIPE_ENABLED = False
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'change-me-in-production')
@@ -183,7 +189,7 @@ def pricing():
 @app.route('/subscribe/checkout', methods=['POST'])
 @login_required
 def subscribe_checkout():
-    if not stripe.api_key or not STRIPE_PRICE_ID:
+    if not STRIPE_ENABLED or not stripe.api_key or not STRIPE_PRICE_ID:
         flash('Payments are not configured yet.', 'warning')
         return redirect(url_for('pricing'))
     try:
@@ -206,7 +212,7 @@ def subscribe_checkout():
 @login_required
 def subscribe_success():
     session_id = request.args.get('session_id')
-    if session_id and stripe.api_key:
+    if session_id and STRIPE_ENABLED and stripe.api_key:
         try:
             sess = stripe.checkout.Session.retrieve(session_id)
             current_user.plan = 'pro'
@@ -223,6 +229,8 @@ def subscribe_success():
 def stripe_webhook():
     payload    = request.get_data(as_text=True)
     sig_header = request.headers.get('Stripe-Signature')
+    if not STRIPE_ENABLED:
+        abort(400)
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
     except (ValueError, stripe.error.SignatureVerificationError):
