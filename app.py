@@ -11,8 +11,10 @@ import stripe
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'change-me-in-production')
 
-_db_url = os.environ.get('DATABASE_URL', 'sqlite:///crm.db')
-if _db_url.startswith('postgres://'):
+_db_url = os.environ.get('DATABASE_URL', '').strip()
+if not _db_url:
+    _db_url = 'sqlite:///crm.db'
+elif _db_url.startswith('postgres://'):
     _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
