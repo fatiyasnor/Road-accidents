@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if lead else 'New Lead' }} · SoloCRM{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('leads') if not lead else url_for('lead_detail', lead_id=lead.id) }}"
+     class="text-muted text-decoration-none small">
+    <i class="bi bi-arrow-left me-1"></i>{{ 'Back to Lead' if lead else 'All Leads' }}
+  </a>
+  <h4 class="mb-0 fw-bold mt-1">{{ 'Edit ' + lead.name if lead else 'New Lead' }}</h4>
+</div>
+
+<div class="row">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <form method="post">
+          <!-- Contact info -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="name"
+                     value="{{ lead.name if lead else '' }}" required autofocus>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Company</label>
+              <input type="text" class="form-control" name="company"
+                     value="{{ lead.company if lead else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Email</label>
+              <input type="email" class="form-control" name="email"
+                     value="{{ lead.email if lead else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Phone</label>
+              <input type="tel" class="form-control" name="phone"
+                     value="{{ lead.phone if lead else '' }}">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Source</label>
+              <select class="form-select" name="source">
+                {% for src in sources %}
+                <option value="{{ src }}"
+                  {% if lead and lead.source == src %}selected{% elif not lead and src == 'Other' %}selected{% endif %}>
+                  {{ src }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Status</label>
+              <select class="form-select" name="status">
+                {% for s in statuses %}
+                <option value="{{ s }}"
+                  {% if lead and lead.status == s %}selected{% elif not lead and s == 'New' %}selected{% endif %}>
+                  {{ s }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Deal Value ($)</label>
+              <input type="number" class="form-control" name="value" min="0" step="100"
+                     value="{{ lead.value|int if lead and lead.value else '' }}" placeholder="0">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Notes</label>
+              <textarea class="form-control" name="notes" rows="4"
+                        placeholder="What do you know about this lead?">{{ lead.notes if lead else '' }}</textarea>
+            </div>
+
+            {% if not lead %}
+            <div class="col-12">
+              <hr class="my-1">
+              <div class="fw-semibold mb-2"><i class="bi bi-calendar-plus me-1 text-primary"></i>Schedule a Follow-up</div>
+              <div class="row g-2">
+                <div class="col-md-5">
+                  <label class="form-label small">Date</label>
+                  <input type="date" class="form-control form-control-sm" name="followup_date"
+                         value="{{ today }}">
+                </div>
+                <div class="col-md-7">
+                  <label class="form-label small">Note</label>
+                  <input type="text" class="form-control form-control-sm" name="followup_note"
+                         placeholder="e.g. Send intro email">
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="col-12 d-flex gap-2 mt-2">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>{{ 'Save Changes' if lead else 'Create Lead' }}
+              </button>
+              <a href="{{ url_for('leads') if not lead else url_for('lead_detail', lead_id=lead.id) }}"
+                 class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

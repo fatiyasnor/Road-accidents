@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · SoloCRM{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0 fw-bold">Dashboard</h4>
+  <a href="{{ url_for('lead_new') }}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Add Lead
+  </a>
+</div>
+
+<!-- KPI Row -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card kpi-card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="kpi-icon bg-primary-subtle text-primary"><i class="bi bi-people-fill"></i></div>
+        <div class="kpi-value">{{ total_leads }}</div>
+        <div class="kpi-label">Total Leads</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card kpi-card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="kpi-icon bg-success-subtle text-success"><i class="bi bi-currency-dollar"></i></div>
+        <div class="kpi-value">${{ '{:,.0f}'.format(pipeline_value) }}</div>
+        <div class="kpi-label">Pipeline Value</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card kpi-card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="kpi-icon bg-danger-subtle text-danger"><i class="bi bi-clock-history"></i></div>
+        <div class="kpi-value">{{ overdue|length }}</div>
+        <div class="kpi-label">Overdue Follow-ups</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card kpi-card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="kpi-icon bg-warning-subtle text-warning"><i class="bi bi-calendar-check"></i></div>
+        <div class="kpi-value">{{ upcoming|length }}</div>
+        <div class="kpi-label">Upcoming Follow-ups</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <!-- Pipeline funnel -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent fw-semibold border-0 pt-3">
+        <i class="bi bi-funnel me-1 text-primary"></i>Pipeline
+      </div>
+      <div class="card-body pt-1">
+        {% set colors = ['secondary','info','primary','warning','success','teal','danger'] %}
+        {% for s in statuses %}
+        {% set cnt = status_counts.get(s, 0) %}
+        <div class="d-flex align-items-center mb-2">
+          <span class="badge bg-{{ colors[loop.index0] }} me-2" style="width:100px;text-align:left">{{ s }}</span>
+          <div class="progress flex-grow-1 me-2" style="height:18px">
+            <div class="progress-bar bg-{{ colors[loop.index0] }}"
+                 style="width:{{ (cnt / [total_leads,1]|max * 100)|int }}%"></div>
+          </div>
+          <span class="text-muted small fw-semibold" style="width:24px;text-align:right">{{ cnt }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Overdue follow-ups -->
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent fw-semibold border-0 pt-3">
+        <i class="bi bi-exclamation-triangle me-1 text-danger"></i>Overdue Follow-ups
+        {% if overdue %}<span class="badge bg-danger ms-1">{{ overdue|length }}</span>{% endif %}
+      </div>
+      <div class="card-body p-0">
+        {% if overdue %}
+        <ul class="list-group list-group-flush">
+          {% for fu in overdue[:8] %}
+          <li class="list-group-item d-flex justify-content-between align-items-start">
+            <div>
+              <a href="{{ url_for('lead_detail', lead_id=fu.lead.id) }}" class="fw-semibold text-decoration-none">
+                {{ fu.lead.name }}
+              </a>
+              {% if fu.lead.company %}<span class="text-muted small"> · {{ fu.lead.company }}</span>{% endif %}
+              {% if fu.note %}<div class="text-muted small">{{ fu.note }}</div>{% endif %}
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-danger-subtle text-danger">{{ fu.due_date.strftime('%b %d') }}</span>
+              <form method="post" action="{{ url_for('followup_complete', fu_id=fu.id) }}">
+                <button class="btn btn-sm btn-outline-success py-0 px-1" title="Mark done">
+                  <i class="bi bi-check-lg"></i>
+                </button>
+              </form>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="text-center text-muted py-4">
+          <i class="bi bi-check-circle fs-3 d-block mb-1 text-success"></i>No overdue follow-ups!
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upcoming + Recent Leads -->
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent fw-semibold border-0 pt-3">
+        <i class="bi bi-calendar2-week me-1 text-primary"></i>Upcoming Follow-ups
+      </div>
+      <div class="card-body p-0">
+        {% if upcoming %}
+        <ul class="list-group list-group-flush">
+          {% for fu in upcoming %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <a href="{{ url_for('lead_detail', lead_id=fu.lead.id) }}" class="fw-semibold text-decoration-none">
+                {{ fu.lead.name }}
+              </a>
+              {% if fu.note %}<div class="text-muted small">{{ fu.note }}</div>{% endif %}
+            </div>
+            <span class="badge {% if fu.is_today %}bg-warning text-dark{% else %}bg-primary-subtle text-primary{% endif %}">
+              {% if fu.is_today %}Today{% else %}{{ fu.due_date.strftime('%b %d') }}{% endif %}
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="text-center text-muted py-4">No upcoming follow-ups.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent fw-semibold border-0 pt-3">
+        <i class="bi bi-clock me-1 text-primary"></i>Recent Leads
+      </div>
+      <div class="card-body p-0">
+        {% if recent_leads %}
+        <ul class="list-group list-group-flush">
+          {% for lead in recent_leads %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <a href="{{ url_for('lead_detail', lead_id=lead.id) }}" class="fw-semibold text-decoration-none">
+                {{ lead.name }}
+              </a>
+              {% if lead.company %}<span class="text-muted small"> · {{ lead.company }}</span>{% endif %}
+            </div>
+            <span class="badge status-{{ lead.status|lower|replace(' ','-') }}">{{ lead.status }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="text-center text-muted py-4">No leads yet. <a href="{{ url_for('lead_new') }}">Add one!</a></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

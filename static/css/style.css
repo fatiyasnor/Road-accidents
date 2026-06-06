@@ -1,0 +1,35 @@
+/* ── Global ── */
+body { background: #f8f9fb; font-size: 0.92rem; }
+.navbar { box-shadow: 0 1px 6px rgba(0,0,0,.12); }
+
+/* ── KPI cards ── */
+.kpi-card .card-body { display: flex; flex-direction: column; gap: 4px; padding: 1.1rem; }
+.kpi-icon { width: 36px; height: 36px; border-radius: 8px; display: flex;
+            align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 2px; }
+.kpi-value { font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
+.kpi-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .05em; color: #6c757d; }
+
+/* ── Status badges ── */
+.badge.status-new              { background: #e2e8f0; color: #475569; }
+.badge.status-contacted        { background: #bfdbfe; color: #1d4ed8; }
+.badge.status-qualified        { background: #a7f3d0; color: #065f46; }
+.badge.status-proposal-sent    { background: #fde68a; color: #92400e; }
+.badge.status-negotiating      { background: #c4b5fd; color: #4c1d95; }
+.badge.status-won              { background: #bbf7d0; color: #14532d; }
+.badge.status-lost             { background: #fecaca; color: #7f1d1d; }
+
+/* ── Table ── */
+.table-danger-subtle { background: #fff5f5; }
+.table > :not(caption) > * > * { padding: .55rem .75rem; }
+
+/* ── Cards ── */
+.card { border-radius: 10px; }
+.card-header { font-size: 0.88rem; }
+
+/* ── Progress bars ── */
+.progress { border-radius: 6px; }
+
+/* ── Misc ── */
+.tracking-wide { letter-spacing: .05em; }
+a { color: #2563eb; }
+a:hover { color: #1d4ed8; }
